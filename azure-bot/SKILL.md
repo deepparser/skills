@@ -1,6 +1,6 @@
 ---
 name: azure-bot
-description: Create and manage Azure Bot resources using the Azure CLI. Covers the full lifecycle: identity creation, bot registration, channel configuration (Teams, Slack, Telegram, Direct Line, and more), and deployment to Azure App Service. ESPECIALLY for OpenClaw agents.
+description: "Create and manage Azure Bot resources using the Azure CLI. Covers the full lifecycle: identity creation, bot registration, channel configuration (Teams, Slack, Telegram, Direct Line, and more), and deployment to Azure App Service. ESPECIALLY for OpenClaw agents."
 ---
 
 # Azure Bot Registration & Deployment
