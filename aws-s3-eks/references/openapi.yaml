@@ -1,0 +1,1476 @@
+openapi: 3.2.0
+
+info:
+  title: Amazon S3 REST API
+  version: "2006-03-01"
+  description: |
+    OpenAPI 3.2.0 specification for the Amazon S3 REST API.
+    Covers core object operations (Get, Put, Delete, Copy, Head),
+    bucket listing (ListObjectsV2), and multipart uploads.
+
+    Designed for use with **EKS Pod Identity** — pods running on Amazon EKS
+    receive temporary AWS credentials via the Pod Identity Agent (DaemonSet).
+    The AWS SDK credential chain picks up the injected `AWS_CONTAINER_CREDENTIALS_FULL_URI`
+    and `AWS_CONTAINER_AUTHORIZATION_TOKEN` environment variables automatically,
+    so no explicit credential configuration is needed in application code.
+
+    ## EKS Pod Identity Authentication Flow
+
+    1. Create an IAM role with a trust policy for `pods.eks.amazonaws.com`
+    2. Associate the role with a Kubernetes ServiceAccount via `CreatePodIdentityAssociation`
+    3. The EKS Pod Identity Agent (link-local `169.254.170.23:80`) injects
+       temporary STS credentials into pods on the same node
+    4. AWS SDKs (and the SigV4 signer) automatically use these credentials
+
+    No OIDC provider setup is required (unlike IRSA).
+
+    Source: https://docs.aws.amazon.com/AmazonS3/latest/API/
+    Generated: 2026-03-10
+  contact:
+    name: AWS Support
+    url: https://aws.amazon.com/support/
+  license:
+    name: Apache 2.0
+    identifier: Apache-2.0
+  x-generated-by: "OAS API Spec Generator Skill"
+  x-source-documentation: "https://docs.aws.amazon.com/AmazonS3/latest/API/"
+
+servers:
+  - url: https://{bucket}.s3.{region}.amazonaws.com
+    description: Virtual-hosted-style (recommended)
+    variables:
+      bucket:
+        default: my-bucket
+        description: S3 bucket name
+      region:
+        default: us-east-1
+        description: AWS region
+  - url: https://s3.{region}.amazonaws.com
+    description: Path-style (legacy, not for directory buckets)
+    variables:
+      region:
+        default: us-east-1
+        description: AWS region
+
+security:
+  - awsSigV4: []
+
+tags:
+  - name: Objects
+    summary: Object operations
+    description: Get, put, delete, copy, and head operations on S3 objects.
+  - name: Bucket
+    summary: Bucket operations
+    description: List objects and manage bucket-level operations.
+  - name: Multipart
+    summary: Multipart uploads
+    description: Initiate, upload parts, complete, and abort multipart uploads.
+
+paths:
+  # ─────────────────────────────────────────────────────────────
+  # ListObjectsV2
+  # ─────────────────────────────────────────────────────────────
+  /:
+    get:
+      operationId: listObjectsV2
+      summary: List objects in a bucket (v2)
+      description: |
+        Returns some or all (up to 1,000) of the objects in a bucket.
+        Uses the `list-type=2` query parameter for the V2 listing API.
+
+        Results are sorted lexicographically by key name (general purpose buckets).
+        Use `continuation-token` for pagination when `IsTruncated` is true.
+        Use `prefix` and `delimiter` to filter and group results.
+      tags: [Bucket]
+      parameters:
+        - name: list-type
+          in: query
+          required: true
+          description: Must be `2` for ListObjectsV2.
+          schema:
+            type: string
+            const: "2"
+        - name: prefix
+          in: query
+          required: false
+          description: Limits results to keys beginning with this prefix.
+          schema:
+            type: string
+          example: "documents/"
+        - name: delimiter
+          in: query
+          required: false
+          description: |
+            Character to group keys. Common prefixes are rolled up.
+            For directory buckets, only `/` is supported.
+          schema:
+            type: string
+          example: "/"
+        - name: max-keys
+          in: query
+          required: false
+          description: Maximum number of keys to return (default and max 1000).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 1000
+        - name: continuation-token
+          in: query
+          required: false
+          description: Token from `NextContinuationToken` in a previous response.
+          schema:
+            type: string
+        - name: start-after
+          in: query
+          required: false
+          description: Start listing after this key (not supported for directory buckets).
+          schema:
+            type: string
+        - name: encoding-type
+          in: query
+          required: false
+          description: Set to `url` to URL-encode keys in the response.
+          schema:
+            type: string
+            enum: [url]
+        - name: fetch-owner
+          in: query
+          required: false
+          description: Set to `true` to include owner information.
+          schema:
+            type: boolean
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+      responses:
+        '200':
+          description: List of objects
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ListBucketResult'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ─────────────────────────────────────────────────────────────
+  # GetObject
+  # ─────────────────────────────────────────────────────────────
+  /{key}:
+    get:
+      operationId: getObject
+      summary: Download an object
+      description: |
+        Retrieves an object from Amazon S3. Returns the object body as a
+        binary stream. Only objects with the `file` property can be downloaded.
+
+        Supports conditional requests (`If-Match`, `If-None-Match`,
+        `If-Modified-Since`, `If-Unmodified-Since`), range requests (`Range`),
+        and response header overrides.
+
+        For archived objects (Glacier/Deep Archive), you must call
+        `RestoreObject` first or you'll get a 403 `InvalidObjectState` error.
+
+        **Permission required:** `s3:GetObject`
+      tags: [Objects]
+      parameters:
+        - $ref: '#/components/parameters/Key'
+        - name: versionId
+          in: query
+          required: false
+          description: Specific object version ID to retrieve.
+          schema:
+            type: string
+        - name: partNumber
+          in: query
+          required: false
+          description: Part number (1–10,000) for multipart objects.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10000
+        - name: response-cache-control
+          in: query
+          required: false
+          description: Override `Cache-Control` response header (requires signed request).
+          schema:
+            type: string
+        - name: response-content-disposition
+          in: query
+          required: false
+          description: Override `Content-Disposition` response header.
+          schema:
+            type: string
+        - name: response-content-encoding
+          in: query
+          required: false
+          description: Override `Content-Encoding` response header.
+          schema:
+            type: string
+        - name: response-content-language
+          in: query
+          required: false
+          description: Override `Content-Language` response header.
+          schema:
+            type: string
+        - name: response-content-type
+          in: query
+          required: false
+          description: Override `Content-Type` response header.
+          schema:
+            type: string
+        - name: response-expires
+          in: query
+          required: false
+          description: Override `Expires` response header.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/IfMatch'
+        - $ref: '#/components/parameters/IfNoneMatch'
+        - $ref: '#/components/parameters/IfModifiedSince'
+        - $ref: '#/components/parameters/IfUnmodifiedSince'
+        - $ref: '#/components/parameters/Range'
+        - $ref: '#/components/parameters/SSECustomerAlgorithm'
+        - $ref: '#/components/parameters/SSECustomerKey'
+        - $ref: '#/components/parameters/SSECustomerKeyMD5'
+        - $ref: '#/components/parameters/RequestPayer'
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+        - name: x-amz-checksum-mode
+          in: header
+          required: false
+          description: Set to `ENABLED` to retrieve object checksums.
+          schema:
+            type: string
+            enum: [ENABLED]
+      responses:
+        '200':
+          description: Object content
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Content-Length:
+              schema:
+                type: integer
+                format: int64
+            Content-Type:
+              schema:
+                type: string
+            Last-Modified:
+              schema:
+                type: string
+                format: date-time
+            x-amz-version-id:
+              schema:
+                type: string
+            x-amz-storage-class:
+              schema:
+                type: string
+            x-amz-server-side-encryption:
+              schema:
+                type: string
+            x-amz-delete-marker:
+              schema:
+                type: boolean
+            x-amz-expiration:
+              schema:
+                type: string
+            x-amz-tagging-count:
+              schema:
+                type: integer
+            x-amz-request-charged:
+              schema:
+                type: string
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '206':
+          description: Partial content (range request)
+          headers:
+            Content-Range:
+              description: "Byte range returned (e.g., `bytes 0-9/443`)"
+              schema:
+                type: string
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '304':
+          description: Not Modified (conditional request)
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+
+    # ─────────────────────────────────────────────────────────────
+    # PutObject
+    # ─────────────────────────────────────────────────────────────
+    put:
+      operationId: putObject
+      summary: Upload an object
+      description: |
+        Adds an object to a bucket. For objects up to 5 GB, use a single PUT.
+        For larger objects, use multipart upload.
+
+        You can optionally specify server-side encryption, storage class,
+        canned ACL, object tags, and object lock retention parameters.
+
+        **Permission required:** `s3:PutObject`
+      tags: [Objects]
+      parameters:
+        - $ref: '#/components/parameters/Key'
+        - name: Content-Type
+          in: header
+          required: false
+          description: MIME type of the object (e.g., `application/json`, `image/jpeg`).
+          schema:
+            type: string
+        - name: Content-Length
+          in: header
+          required: true
+          description: Size of the object body in bytes.
+          schema:
+            type: integer
+            format: int64
+        - name: Content-MD5
+          in: header
+          required: false
+          description: Base64-encoded 128-bit MD5 digest for integrity check.
+          schema:
+            type: string
+        - name: Content-Encoding
+          in: header
+          required: false
+          description: Content encoding applied (e.g., `gzip`).
+          schema:
+            type: string
+        - name: Cache-Control
+          in: header
+          required: false
+          description: Cache-Control directives for the object.
+          schema:
+            type: string
+        - name: Content-Disposition
+          in: header
+          required: false
+          description: Content-Disposition header value.
+          schema:
+            type: string
+        - name: x-amz-storage-class
+          in: header
+          required: false
+          description: Storage class for the object.
+          schema:
+            type: string
+            enum:
+              - STANDARD
+              - REDUCED_REDUNDANCY
+              - STANDARD_IA
+              - ONEZONE_IA
+              - INTELLIGENT_TIERING
+              - GLACIER
+              - DEEP_ARCHIVE
+              - GLACIER_IR
+              - EXPRESS_ONEZONE
+            default: STANDARD
+        - name: x-amz-acl
+          in: header
+          required: false
+          description: Canned ACL (not supported for directory buckets).
+          schema:
+            type: string
+            enum:
+              - private
+              - public-read
+              - public-read-write
+              - authenticated-read
+              - aws-exec-read
+              - bucket-owner-read
+              - bucket-owner-full-control
+        - name: x-amz-tagging
+          in: header
+          required: false
+          description: URL-encoded tag set (e.g., `key1=value1&key2=value2`).
+          schema:
+            type: string
+        - name: x-amz-server-side-encryption
+          in: header
+          required: false
+          description: Server-side encryption algorithm.
+          schema:
+            type: string
+            enum: [AES256, "aws:kms", "aws:kms:dsse"]
+        - name: x-amz-server-side-encryption-aws-kms-key-id
+          in: header
+          required: false
+          description: KMS key ID or ARN for SSE-KMS encryption.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/SSECustomerAlgorithm'
+        - $ref: '#/components/parameters/SSECustomerKey'
+        - $ref: '#/components/parameters/SSECustomerKeyMD5'
+        - name: x-amz-object-lock-mode
+          in: header
+          required: false
+          description: Object Lock retention mode.
+          schema:
+            type: string
+            enum: [GOVERNANCE, COMPLIANCE]
+        - name: x-amz-object-lock-retain-until-date
+          in: header
+          required: false
+          description: Object Lock retention expiration (ISO 8601).
+          schema:
+            type: string
+            format: date-time
+        - name: x-amz-object-lock-legal-hold
+          in: header
+          required: false
+          description: Object Lock legal hold status.
+          schema:
+            type: string
+            enum: ["ON", "OFF"]
+        - name: x-amz-sdk-checksum-algorithm
+          in: header
+          required: false
+          description: Checksum algorithm to use.
+          schema:
+            type: string
+            enum: [CRC32, CRC32C, SHA1, SHA256, CRC64NVME]
+        - $ref: '#/components/parameters/IfMatch'
+        - name: If-None-Match
+          in: header
+          required: false
+          description: Set to `*` to upload only if the key does not already exist.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/RequestPayer'
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+      requestBody:
+        required: true
+        description: Object binary data.
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Object uploaded successfully
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            x-amz-version-id:
+              schema:
+                type: string
+            x-amz-server-side-encryption:
+              schema:
+                type: string
+            x-amz-server-side-encryption-aws-kms-key-id:
+              schema:
+                type: string
+            x-amz-expiration:
+              schema:
+                type: string
+            x-amz-request-charged:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+
+    # ─────────────────────────────────────────────────────────────
+    # DeleteObject
+    # ─────────────────────────────────────────────────────────────
+    delete:
+      operationId: deleteObject
+      summary: Delete an object
+      description: |
+        Removes an object from a bucket. If versioning is enabled, a delete
+        marker is inserted (the object is not permanently removed unless
+        `versionId` is specified).
+
+        **Permission required:** `s3:DeleteObject`
+        (plus `s3:DeleteObjectVersion` for versioned deletes)
+      tags: [Objects]
+      parameters:
+        - $ref: '#/components/parameters/Key'
+        - name: versionId
+          in: query
+          required: false
+          description: Version ID to permanently delete a specific version.
+          schema:
+            type: string
+        - name: If-Match
+          in: header
+          required: false
+          description: Delete only if ETag matches. Accepts `*` for any ETag.
+          schema:
+            type: string
+        - name: x-amz-mfa
+          in: header
+          required: false
+          description: |
+            MFA authentication: `[SerialNumber] [AuthenticationCode]`.
+            Required when MFA Delete is enabled.
+          schema:
+            type: string
+        - name: x-amz-bypass-governance-retention
+          in: header
+          required: false
+          description: Bypass Governance-mode Object Lock retention.
+          schema:
+            type: boolean
+        - $ref: '#/components/parameters/RequestPayer'
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+      responses:
+        '204':
+          description: Object deleted
+          headers:
+            x-amz-delete-marker:
+              description: "`true` if a delete marker was created."
+              schema:
+                type: boolean
+            x-amz-version-id:
+              description: Version ID of the delete marker created.
+              schema:
+                type: string
+            x-amz-request-charged:
+              schema:
+                type: string
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    # ─────────────────────────────────────────────────────────────
+    # HeadObject
+    # ─────────────────────────────────────────────────────────────
+    head:
+      operationId: headObject
+      summary: Get object metadata
+      description: |
+        Retrieves metadata from an object without returning the object itself.
+        Useful for checking if an object exists, its size, content type,
+        and other metadata without downloading the full body.
+
+        **Permission required:** `s3:GetObject`
+      tags: [Objects]
+      parameters:
+        - $ref: '#/components/parameters/Key'
+        - name: versionId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: partNumber
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10000
+        - $ref: '#/components/parameters/IfMatch'
+        - $ref: '#/components/parameters/IfNoneMatch'
+        - $ref: '#/components/parameters/IfModifiedSince'
+        - $ref: '#/components/parameters/IfUnmodifiedSince'
+        - $ref: '#/components/parameters/Range'
+        - $ref: '#/components/parameters/SSECustomerAlgorithm'
+        - $ref: '#/components/parameters/SSECustomerKey'
+        - $ref: '#/components/parameters/SSECustomerKeyMD5'
+        - $ref: '#/components/parameters/RequestPayer'
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+        - name: x-amz-checksum-mode
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [ENABLED]
+      responses:
+        '200':
+          description: Object metadata
+          headers:
+            Content-Length:
+              schema:
+                type: integer
+                format: int64
+            Content-Type:
+              schema:
+                type: string
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              schema:
+                type: string
+                format: date-time
+            x-amz-version-id:
+              schema:
+                type: string
+            x-amz-storage-class:
+              schema:
+                type: string
+            x-amz-server-side-encryption:
+              schema:
+                type: string
+            x-amz-delete-marker:
+              schema:
+                type: boolean
+            x-amz-restore:
+              schema:
+                type: string
+            x-amz-archive-status:
+              schema:
+                type: string
+            x-amz-object-lock-mode:
+              schema:
+                type: string
+            x-amz-object-lock-retain-until-date:
+              schema:
+                type: string
+                format: date-time
+            x-amz-object-lock-legal-hold:
+              schema:
+                type: string
+            x-amz-mp-parts-count:
+              schema:
+                type: integer
+            x-amz-tagging-count:
+              schema:
+                type: integer
+            x-amz-replication-status:
+              schema:
+                type: string
+            x-amz-expiration:
+              schema:
+                type: string
+            x-amz-request-charged:
+              schema:
+                type: string
+        '304':
+          description: Not Modified
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+
+  # ─────────────────────────────────────────────────────────────
+  # CopyObject
+  # ─────────────────────────────────────────────────────────────
+  /{key}#copy:
+    put:
+      operationId: copyObject
+      summary: Copy an object
+      description: |
+        Creates a copy of an object already stored in S3. Equivalent to a GET
+        then PUT. The `x-amz-copy-source` header identifies the source.
+
+        Single copy is limited to 5 GB; use multipart copy for larger objects.
+
+        **Permission required:** `s3:GetObject` (source) + `s3:PutObject` (destination)
+      tags: [Objects]
+      parameters:
+        - $ref: '#/components/parameters/Key'
+        - name: x-amz-copy-source
+          in: header
+          required: true
+          description: |
+            Source object path: `/{source-bucket}/{source-key}`.
+            Append `?versionId={id}` to copy a specific version.
+          schema:
+            type: string
+          example: "/source-bucket/source-key"
+        - name: x-amz-metadata-directive
+          in: header
+          required: false
+          description: Whether to copy or replace metadata from the source.
+          schema:
+            type: string
+            enum: [COPY, REPLACE]
+            default: COPY
+        - name: x-amz-tagging-directive
+          in: header
+          required: false
+          description: Whether to copy or replace tags from the source.
+          schema:
+            type: string
+            enum: [COPY, REPLACE]
+            default: COPY
+        - name: x-amz-copy-source-if-match
+          in: header
+          required: false
+          description: Copy only if source ETag matches.
+          schema:
+            type: string
+        - name: x-amz-copy-source-if-none-match
+          in: header
+          required: false
+          description: Copy only if source ETag differs.
+          schema:
+            type: string
+        - name: x-amz-copy-source-if-modified-since
+          in: header
+          required: false
+          description: Copy only if source modified after this timestamp.
+          schema:
+            type: string
+            format: date-time
+        - name: x-amz-copy-source-if-unmodified-since
+          in: header
+          required: false
+          description: Copy only if source not modified since this timestamp.
+          schema:
+            type: string
+            format: date-time
+        - name: x-amz-server-side-encryption
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [AES256, "aws:kms", "aws:kms:dsse"]
+        - name: x-amz-storage-class
+          in: header
+          required: false
+          schema:
+            type: string
+            enum:
+              - STANDARD
+              - REDUCED_REDUNDANCY
+              - STANDARD_IA
+              - ONEZONE_IA
+              - INTELLIGENT_TIERING
+              - GLACIER
+              - DEEP_ARCHIVE
+              - GLACIER_IR
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+      responses:
+        '200':
+          description: Object copied
+          headers:
+            x-amz-copy-source-version-id:
+              schema:
+                type: string
+            x-amz-version-id:
+              schema:
+                type: string
+            x-amz-server-side-encryption:
+              schema:
+                type: string
+            x-amz-expiration:
+              schema:
+                type: string
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CopyObjectResult'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+
+  # ─────────────────────────────────────────────────────────────
+  # CreateMultipartUpload
+  # ─────────────────────────────────────────────────────────────
+  /{key}?uploads:
+    post:
+      operationId: createMultipartUpload
+      summary: Initiate a multipart upload
+      description: |
+        Initiates a multipart upload and returns an upload ID.
+        Use for objects larger than 5 GB or when you want parallel uploads.
+
+        **Workflow:**
+        1. `CreateMultipartUpload` → returns `UploadId`
+        2. `UploadPart` (repeat for each part, using the `UploadId`)
+        3. `CompleteMultipartUpload` or `AbortMultipartUpload`
+
+        You **must** complete or abort the upload to avoid storage charges
+        for uploaded parts.
+
+        **Permission required:** `s3:PutObject`
+      tags: [Multipart]
+      parameters:
+        - $ref: '#/components/parameters/Key'
+        - name: Content-Type
+          in: header
+          required: false
+          description: MIME type for the object.
+          schema:
+            type: string
+        - name: Cache-Control
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: Content-Disposition
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: Content-Encoding
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: x-amz-storage-class
+          in: header
+          required: false
+          schema:
+            type: string
+            enum:
+              - STANDARD
+              - REDUCED_REDUNDANCY
+              - STANDARD_IA
+              - ONEZONE_IA
+              - INTELLIGENT_TIERING
+              - GLACIER
+              - DEEP_ARCHIVE
+              - GLACIER_IR
+              - EXPRESS_ONEZONE
+        - name: x-amz-server-side-encryption
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [AES256, "aws:kms", "aws:kms:dsse"]
+        - name: x-amz-server-side-encryption-aws-kms-key-id
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: x-amz-acl
+          in: header
+          required: false
+          schema:
+            type: string
+            enum:
+              - private
+              - public-read
+              - public-read-write
+              - authenticated-read
+              - bucket-owner-full-control
+        - name: x-amz-tagging
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: x-amz-checksum-algorithm
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [CRC32, CRC32C, SHA1, SHA256]
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+      responses:
+        '200':
+          description: Multipart upload initiated
+          headers:
+            x-amz-server-side-encryption:
+              schema:
+                type: string
+            x-amz-server-side-encryption-aws-kms-key-id:
+              schema:
+                type: string
+            x-amz-abort-date:
+              description: Date after which incomplete upload may be auto-aborted.
+              schema:
+                type: string
+                format: date-time
+            x-amz-abort-rule-id:
+              description: Lifecycle rule ID for auto-abort.
+              schema:
+                type: string
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/InitiateMultipartUploadResult'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ─────────────────────────────────────────────────────────────
+  # UploadPart
+  # ─────────────────────────────────────────────────────────────
+  /{key}#uploadPart:
+    put:
+      operationId: uploadPart
+      summary: Upload a part
+      description: |
+        Uploads a part in a multipart upload. Part numbers can be 1 to 10,000.
+        Parts can be uploaded in any order and in parallel.
+
+        Each part (except the last) must be at least 5 MB.
+
+        **Permission required:** `s3:PutObject`
+      tags: [Multipart]
+      parameters:
+        - $ref: '#/components/parameters/Key'
+        - name: partNumber
+          in: query
+          required: true
+          description: Part number (1–10,000).
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10000
+        - name: uploadId
+          in: query
+          required: true
+          description: Upload ID from `CreateMultipartUpload`.
+          schema:
+            type: string
+        - name: Content-Length
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: Content-MD5
+          in: header
+          required: false
+          schema:
+            type: string
+        - $ref: '#/components/parameters/SSECustomerAlgorithm'
+        - $ref: '#/components/parameters/SSECustomerKey'
+        - $ref: '#/components/parameters/SSECustomerKeyMD5'
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Part uploaded
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            x-amz-server-side-encryption:
+              schema:
+                type: string
+            x-amz-request-charged:
+              schema:
+                type: string
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ─────────────────────────────────────────────────────────────
+  # CompleteMultipartUpload
+  # ─────────────────────────────────────────────────────────────
+  /{key}#completeMultipart:
+    post:
+      operationId: completeMultipartUpload
+      summary: Complete a multipart upload
+      description: |
+        Assembles previously uploaded parts into a complete object.
+        The request body lists all parts by number and ETag.
+
+        **Permission required:** `s3:PutObject`
+      tags: [Multipart]
+      parameters:
+        - $ref: '#/components/parameters/Key'
+        - name: uploadId
+          in: query
+          required: true
+          description: Upload ID from `CreateMultipartUpload`.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CompleteMultipartUploadRequest'
+      responses:
+        '200':
+          description: Upload completed
+          headers:
+            x-amz-version-id:
+              schema:
+                type: string
+            x-amz-server-side-encryption:
+              schema:
+                type: string
+            x-amz-expiration:
+              schema:
+                type: string
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CompleteMultipartUploadResult'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ─────────────────────────────────────────────────────────────
+  # AbortMultipartUpload
+  # ─────────────────────────────────────────────────────────────
+  /{key}#abortMultipart:
+    delete:
+      operationId: abortMultipartUpload
+      summary: Abort a multipart upload
+      description: |
+        Aborts a multipart upload. All uploaded parts are freed.
+        You should always abort an upload that will not be completed
+        to avoid ongoing storage charges.
+
+        **Permission required:** `s3:AbortMultipartUpload`
+      tags: [Multipart]
+      parameters:
+        - $ref: '#/components/parameters/Key'
+        - name: uploadId
+          in: query
+          required: true
+          description: Upload ID to abort.
+          schema:
+            type: string
+        - $ref: '#/components/parameters/ExpectedBucketOwner'
+      responses:
+        '204':
+          description: Multipart upload aborted
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  # ─────────────────────────────────────────────────────────────
+  # Reusable Parameters
+  # ─────────────────────────────────────────────────────────────
+  parameters:
+    Key:
+      name: key
+      in: path
+      required: true
+      description: Object key (minimum length 1).
+      schema:
+        type: string
+        minLength: 1
+      example: "documents/report.pdf"
+
+    IfMatch:
+      name: If-Match
+      in: header
+      required: false
+      description: Return/act only if the object ETag matches this value.
+      schema:
+        type: string
+
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: Return/act only if the object ETag does NOT match this value.
+      schema:
+        type: string
+
+    IfModifiedSince:
+      name: If-Modified-Since
+      in: header
+      required: false
+      description: Return only if modified since this timestamp.
+      schema:
+        type: string
+        format: date-time
+
+    IfUnmodifiedSince:
+      name: If-Unmodified-Since
+      in: header
+      required: false
+      description: Return only if NOT modified since this timestamp.
+      schema:
+        type: string
+        format: date-time
+
+    Range:
+      name: Range
+      in: header
+      required: false
+      description: "Byte range to download (e.g., `bytes=0-1023`). Single range only."
+      schema:
+        type: string
+      example: "bytes=0-1023"
+
+    SSECustomerAlgorithm:
+      name: x-amz-server-side-encryption-customer-algorithm
+      in: header
+      required: false
+      description: SSE-C encryption algorithm (must be `AES256`).
+      schema:
+        type: string
+        enum: [AES256]
+
+    SSECustomerKey:
+      name: x-amz-server-side-encryption-customer-key
+      in: header
+      required: false
+      description: Base64-encoded 256-bit encryption key for SSE-C.
+      schema:
+        type: string
+        format: byte
+
+    SSECustomerKeyMD5:
+      name: x-amz-server-side-encryption-customer-key-MD5
+      in: header
+      required: false
+      description: Base64-encoded 128-bit MD5 digest of the SSE-C key.
+      schema:
+        type: string
+
+    RequestPayer:
+      name: x-amz-request-payer
+      in: header
+      required: false
+      description: Set to `requester` for Requester Pays buckets.
+      schema:
+        type: string
+        enum: [requester]
+
+    ExpectedBucketOwner:
+      name: x-amz-expected-bucket-owner
+      in: header
+      required: false
+      description: Expected bucket owner account ID (returns 403 on mismatch).
+      schema:
+        type: string
+
+  # ─────────────────────────────────────────────────────────────
+  # Reusable Headers
+  # ─────────────────────────────────────────────────────────────
+  headers:
+    ETag:
+      description: Entity tag — opaque identifier for the object version.
+      schema:
+        type: string
+
+  # ─────────────────────────────────────────────────────────────
+  # Schemas
+  # ─────────────────────────────────────────────────────────────
+  schemas:
+    ListBucketResult:
+      type: object
+      xml:
+        name: ListBucketResult
+        namespace: "http://s3.amazonaws.com/doc/2006-03-01/"
+      description: Response for ListObjectsV2.
+      properties:
+        Name:
+          type: string
+          description: Bucket name.
+        Prefix:
+          type: string
+          description: Prefix filter applied.
+        Delimiter:
+          type: string
+          description: Delimiter used for grouping.
+        KeyCount:
+          type: integer
+          description: Number of keys returned.
+        MaxKeys:
+          type: integer
+          description: Maximum keys requested.
+        IsTruncated:
+          type: boolean
+          description: "`true` if more results are available."
+        ContinuationToken:
+          type: string
+          description: Echo of the request continuation token.
+        NextContinuationToken:
+          type: string
+          description: Token for the next page (use as `continuation-token`).
+        StartAfter:
+          type: string
+        EncodingType:
+          type: string
+        Contents:
+          type: array
+          description: Listed objects.
+          items:
+            $ref: '#/components/schemas/S3Object'
+        CommonPrefixes:
+          type: array
+          description: Grouped key prefixes when delimiter is used.
+          items:
+            type: object
+            properties:
+              Prefix:
+                type: string
+
+    S3Object:
+      type: object
+      description: Metadata for an S3 object in a listing.
+      properties:
+        Key:
+          type: string
+        LastModified:
+          type: string
+          format: date-time
+        ETag:
+          type: string
+        Size:
+          type: integer
+          format: int64
+          description: Object size in bytes.
+        StorageClass:
+          type: string
+          enum:
+            - STANDARD
+            - REDUCED_REDUNDANCY
+            - STANDARD_IA
+            - ONEZONE_IA
+            - INTELLIGENT_TIERING
+            - GLACIER
+            - DEEP_ARCHIVE
+            - GLACIER_IR
+            - EXPRESS_ONEZONE
+        ChecksumAlgorithm:
+          type: string
+          enum: [CRC32, CRC32C, SHA1, SHA256, CRC64NVME]
+        ChecksumType:
+          type: string
+          enum: [COMPOSITE, FULL_OBJECT]
+        Owner:
+          $ref: '#/components/schemas/Owner'
+        RestoreStatus:
+          type: object
+          properties:
+            IsRestoreInProgress:
+              type: boolean
+            RestoreExpiryDate:
+              type: string
+              format: date-time
+
+    Owner:
+      type: object
+      properties:
+        ID:
+          type: string
+          description: Canonical user ID.
+        DisplayName:
+          type: string
+
+    CopyObjectResult:
+      type: object
+      xml:
+        name: CopyObjectResult
+      description: Result of a CopyObject operation.
+      properties:
+        ETag:
+          type: string
+        LastModified:
+          type: string
+          format: date-time
+        ChecksumCRC32:
+          type: string
+        ChecksumCRC32C:
+          type: string
+        ChecksumCRC64NVME:
+          type: string
+        ChecksumSHA1:
+          type: string
+        ChecksumSHA256:
+          type: string
+        ChecksumType:
+          type: string
+          enum: [COMPOSITE, FULL_OBJECT]
+
+    InitiateMultipartUploadResult:
+      type: object
+      xml:
+        name: InitiateMultipartUploadResult
+        namespace: "http://s3.amazonaws.com/doc/2006-03-01/"
+      description: Response from CreateMultipartUpload.
+      properties:
+        Bucket:
+          type: string
+        Key:
+          type: string
+        UploadId:
+          type: string
+          description: Upload ID to use in subsequent UploadPart and Complete/Abort calls.
+
+    CompleteMultipartUploadRequest:
+      type: object
+      xml:
+        name: CompleteMultipartUpload
+      description: Request body listing parts to assemble.
+      properties:
+        Part:
+          type: array
+          items:
+            type: object
+            required: [PartNumber, ETag]
+            properties:
+              PartNumber:
+                type: integer
+                minimum: 1
+                maximum: 10000
+              ETag:
+                type: string
+                description: ETag returned from UploadPart.
+              ChecksumCRC32:
+                type: string
+              ChecksumCRC32C:
+                type: string
+              ChecksumSHA1:
+                type: string
+              ChecksumSHA256:
+                type: string
+
+    CompleteMultipartUploadResult:
+      type: object
+      xml:
+        name: CompleteMultipartUploadResult
+        namespace: "http://s3.amazonaws.com/doc/2006-03-01/"
+      description: Response after completing a multipart upload.
+      properties:
+        Location:
+          type: string
+          format: uri
+          description: URI of the newly created object.
+        Bucket:
+          type: string
+        Key:
+          type: string
+        ETag:
+          type: string
+          description: Entity tag of the assembled object.
+        ChecksumCRC32:
+          type: string
+        ChecksumCRC32C:
+          type: string
+        ChecksumSHA1:
+          type: string
+        ChecksumSHA256:
+          type: string
+        ChecksumType:
+          type: string
+          enum: [COMPOSITE, FULL_OBJECT]
+
+    S3Error:
+      type: object
+      xml:
+        name: Error
+      description: S3 error response.
+      required: [Code, Message]
+      properties:
+        Code:
+          type: string
+          description: |
+            Error code (e.g., `NoSuchKey`, `AccessDenied`, `NoSuchBucket`,
+            `InvalidObjectState`, `PreconditionFailed`).
+        Message:
+          type: string
+          description: Human-readable error message.
+        Resource:
+          type: string
+          description: The resource that caused the error.
+        RequestId:
+          type: string
+          description: S3 request ID for debugging.
+        HostId:
+          type: string
+          description: Extended request ID.
+
+  # ─────────────────────────────────────────────────────────────
+  # Standard Error Responses
+  # ─────────────────────────────────────────────────────────────
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/S3Error'
+
+    Forbidden:
+      description: Access denied or invalid credentials
+      content:
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/S3Error'
+
+    NotFound:
+      description: Bucket or object not found
+      content:
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/S3Error'
+
+    PreconditionFailed:
+      description: Conditional request precondition not met
+      content:
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/S3Error'
+
+  # ─────────────────────────────────────────────────────────────
+  # Security Schemes
+  # ─────────────────────────────────────────────────────────────
+  securitySchemes:
+    awsSigV4:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        AWS Signature Version 4 authentication.
+
+        When using **EKS Pod Identity**, credentials are injected automatically:
+
+        1. The EKS Pod Identity Agent (DaemonSet) runs on each node
+        2. It serves temporary STS credentials at `169.254.170.23:80` (link-local)
+        3. Environment variables are set in pod containers:
+           - `AWS_CONTAINER_CREDENTIALS_FULL_URI`
+           - `AWS_CONTAINER_AUTHORIZATION_TOKEN`
+        4. AWS SDKs pick these up via the default credential chain — no code changes needed
+
+        **IAM Role Trust Policy:**
+        ```json
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": { "Service": "pods.eks.amazonaws.com" },
+            "Action": ["sts:AssumeRole", "sts:TagSession"]
+          }]
+        }
+        ```
+
+        **S3 Permission Policy (example):**
+        ```json
+        {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Action": [
+              "s3:GetObject",
+              "s3:PutObject",
+              "s3:DeleteObject",
+              "s3:ListBucket"
+            ],
+            "Resource": [
+              "arn:aws:s3:::my-bucket",
+              "arn:aws:s3:::my-bucket/*"
+            ]
+          }]
+        }
+        ```
+
+        See: https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html
+
+externalDocs:
+  description: Amazon S3 REST API Reference
+  url: https://docs.aws.amazon.com/AmazonS3/latest/API/
