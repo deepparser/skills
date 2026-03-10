@@ -9,12 +9,12 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: dp-dev
+  name: my-cluster-dev
   region: us-east-1
   version: "1.31"
   tags:
     environment: dev
-    project: deepparser
+    project: my-project
 
 vpc:
   cidr: 10.0.0.0/16
@@ -42,7 +42,7 @@ addons:
       ebsCSIController: true
 
 managedNodeGroups:
-  - name: dp-dev-general
+  - name: my-cluster-dev-general
     instanceType: t3.xlarge
     desiredCapacity: 1
     minSize: 1
@@ -69,12 +69,12 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: dp-staging
+  name: my-cluster-staging
   region: us-east-1
   version: "1.31"
   tags:
     environment: staging
-    project: deepparser
+    project: my-project
 
 vpc:
   cidr: 10.1.0.0/16
@@ -103,7 +103,7 @@ addons:
       ebsCSIController: true
 
 managedNodeGroups:
-  - name: dp-staging-general
+  - name: my-cluster-staging-general
     instanceType: m6i.large
     desiredCapacity: 2
     minSize: 2
@@ -138,12 +138,12 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: dp-production
+  name: my-cluster-production
   region: us-east-1
   version: "1.31"
   tags:
     environment: production
-    project: deepparser
+    project: my-project
     managed-by: eksctl
 
 vpc:
@@ -173,8 +173,8 @@ addons:
       ebsCSIController: true
 
 managedNodeGroups:
-  # General-purpose: dp-idp, dp-mcp-proxy, dp-agents
-  - name: dp-production-general
+  # General-purpose workloads
+  - name: my-cluster-production-general
     instanceType: m6i.xlarge
     desiredCapacity: 3
     minSize: 2
@@ -194,8 +194,8 @@ managedNodeGroups:
     tags:
       node-group: general
 
-  # Compute-optimized: dp-maas-proxy (LLM routing, high request volume)
-  - name: dp-production-compute
+  # Compute-optimized: high-CPU workloads (routing, serialization)
+  - name: my-cluster-production-compute
     instanceType: c6i.xlarge
     desiredCapacity: 2
     minSize: 2
@@ -219,8 +219,8 @@ managedNodeGroups:
     tags:
       node-group: compute
 
-  # Spot instances: batch jobs, Temporal workers, non-critical
-  - name: dp-production-spot
+  # Spot instances: batch jobs, non-critical workloads
+  - name: my-cluster-production-spot
     instanceTypes:
       - m6i.xlarge
       - m5.xlarge
@@ -265,7 +265,7 @@ Extends production config with a GPU node group for model inference.
 
 ```yaml
 # Add to the production config's managedNodeGroups:
-  - name: dp-production-gpu
+  - name: my-cluster-production-gpu
     instanceTypes:
       - g5.xlarge
       - g5.2xlarge
@@ -307,7 +307,7 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: dp-production
+  name: my-cluster-production
   region: us-east-1
   version: "1.31"
 

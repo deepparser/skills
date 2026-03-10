@@ -156,7 +156,7 @@ metadata:
   version: "${K8S_VERSION}"
   tags:
     managed-by: eksctl
-    project: deepparser
+    project: my-project
 
 ${VPC_BLOCK}
 
@@ -266,13 +266,11 @@ kubectl wait --namespace ingress-nginx \
   --timeout=120s 2>/dev/null || echo "  (timeout — check manually)"
 echo "  ✓ NGINX Ingress Controller installed."
 
-# ── 6. Create namespaces for DeepParser services ─────────────────────────
+# ── 6. Create default namespace ───────────────────────────────────────────
 echo ""
-echo "▸ Creating DeepParser namespaces..."
-for NS in dp-idp dp-agents dp-maas dp-mcp; do
-  kubectl create namespace "$NS" --dry-run=client -o yaml | kubectl apply -f -
-done
-echo "  ✓ Namespaces created."
+echo "▸ Creating default app namespace..."
+kubectl create namespace apps --dry-run=client -o yaml | kubectl apply -f -
+echo "  ✓ Namespace created."
 
 # ── Done ─────────────────────────────────────────────────────────────────
 echo ""
@@ -284,7 +282,7 @@ echo "  K8s version: $K8S_VERSION"
 echo "  Region:      $REGION"
 echo ""
 echo "  Next steps:"
-echo "    1. Deploy services:  kubectl apply -f dp_agents/k8s/"
+echo "    1. Deploy services:  kubectl apply -f k8s/"
 echo "    2. Set up S3 access: aws-s3-eks skill"
 echo "    3. Add node groups:  scripts/create-node-group.sh"
 echo ""

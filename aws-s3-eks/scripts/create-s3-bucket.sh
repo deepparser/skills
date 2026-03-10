@@ -9,8 +9,8 @@
 #   --bucket NAME           S3 bucket name (required)
 #   --region REGION         AWS region (required)
 #   --cluster CLUSTER       EKS cluster name (triggers full pod identity setup)
-#   --namespace NS          K8s namespace (default: dp-agents)
-#   --service-account SA    K8s ServiceAccount name (default: dp-agents-api)
+#   --namespace NS          K8s namespace (default: default)
+#   --service-account SA    K8s ServiceAccount name (default: default)
 #   --role-name ROLE        Custom IAM role name
 #   --versioning            Enable versioning (default: true)
 #   --no-versioning         Disable versioning
@@ -26,8 +26,8 @@ set -euo pipefail
 BUCKET=""
 REGION=""
 CLUSTER=""
-NAMESPACE="dp-agents"
-SERVICE_ACCOUNT="dp-agents-api"
+NAMESPACE="default"
+SERVICE_ACCOUNT="default"
 ROLE_NAME=""
 VERSIONING="true"
 LIFECYCLE_DAYS=""

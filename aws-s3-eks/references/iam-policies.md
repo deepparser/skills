@@ -34,7 +34,7 @@ Every IAM role used with EKS Pod Identity needs this trust policy. Replace `ACCO
 
 ### Full Read-Write Access (Single Bucket)
 
-For services that upload and download files (e.g., dp-agents file attachments).
+For services that upload and download files.
 
 ```json
 {

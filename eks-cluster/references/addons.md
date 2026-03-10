@@ -78,7 +78,7 @@ addons:
 
 ### EFS CSI Driver
 
-For ReadWriteMany PVCs (shared across pods/nodes). Useful for the dp-agents uploads volume.
+For ReadWriteMany PVCs (shared across pods/nodes). Useful for shared upload or data volumes.
 
 ```bash
 # Create IAM role
@@ -219,7 +219,7 @@ aws eks describe-addon-versions --addon-name vpc-cni --kubernetes-version 1.31 \
 ## Addon Compatibility Matrix
 
 | Addon | Min K8s | IAM Role Needed | Notes |
-|-------|---------|-----------------|-------|
+| --- | --- | --- | --- |
 | vpc-cni | 1.24 | No (uses node role) | Core networking |
 | coredns | 1.24 | No | DNS resolution |
 | kube-proxy | 1.24 | No | Service networking |

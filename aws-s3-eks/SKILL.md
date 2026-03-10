@@ -1,11 +1,11 @@
 ---
 name: aws-s3-eks
-description: "Create and manage Amazon S3 buckets with EKS Pod Identity authentication. Use when: (1) Creating S3 buckets for DeepParser services, (2) Setting up EKS Pod Identity so pods can access S3 without static credentials, (3) Configuring IAM roles/policies for S3 access, (4) Connecting dp-agents or other services to S3 storage on EKS, (5) Troubleshooting S3 access from Kubernetes pods. Requires: aws CLI v2, kubectl, eksctl."
+description: "Create and manage Amazon S3 buckets with EKS Pod Identity authentication. Use when: (1) Creating S3 buckets for any service running on EKS, (2) Setting up EKS Pod Identity so pods can access S3 without static credentials, (3) Configuring IAM roles/policies for S3 access, (4) Connecting Kubernetes services to S3 storage on EKS, (5) Troubleshooting S3 access from Kubernetes pods. Requires: aws CLI v2, kubectl, eksctl."
 ---
 
 # AWS S3 + EKS Pod Identity
 
-Provision S3 buckets and configure EKS Pod Identity so DeepParser services running on EKS can access S3 without static AWS credentials.
+Provision S3 buckets and configure EKS Pod Identity so services running on EKS can access S3 without static AWS credentials.
 
 ## Prerequisites
 
@@ -23,11 +23,11 @@ For a complete setup (bucket + IAM role + pod identity), run the bundled script:
 
 ```bash
 scripts/create-s3-bucket.sh \
-  --bucket dp-agents-uploads \
+  --bucket my-app-uploads \
   --region us-east-1 \
-  --cluster my-eks-cluster \
-  --namespace dp-agents \
-  --service-account dp-agents-api
+  --cluster my-cluster \
+  --namespace my-app \
+  --service-account my-app-api
 ```
 
 This single command:
@@ -85,18 +85,17 @@ kubectl run s3-test --rm -it \
 
 If it lists objects (or shows empty), pod identity is working. The AWS SDK credential chain automatically picks up the injected `AWS_CONTAINER_CREDENTIALS_FULL_URI` env var.
 
-### Step 4: Configure DeepParser Service
+### Step 4: Configure Your Service
 
-For dp-agents, set these environment variables (or configure via Admin UI > Settings > S3):
+Set the bucket name and region in your application's environment variables:
 
 ```yaml
-DP_AGENTS_S3_ENABLED: "true"
-DP_AGENTS_S3_BUCKET: "dp-agents-uploads"
-DP_AGENTS_S3_REGION: "us-east-1"
+S3_BUCKET: "my-app-uploads"
+S3_REGION: "us-east-1"
 # No access key / secret key needed — Pod Identity handles credentials
 ```
 
-For other services, the boto3/aioboto3 default credential chain works automatically.
+The AWS SDK default credential chain (boto3, aioboto3, aws-sdk-js, etc.) picks up credentials automatically via the injected `AWS_CONTAINER_CREDENTIALS_FULL_URI` env var.
 
 ## How EKS Pod Identity Works
 

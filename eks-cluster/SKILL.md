@@ -1,11 +1,11 @@
 ---
 name: eks-cluster
-description: "Create and manage Amazon EKS clusters, managed node groups, and EC2 instances for DeepParser services. Use when: (1) Provisioning a new EKS cluster from scratch, (2) Adding or modifying managed node groups, (3) Choosing EC2 instance types for workloads, (4) Installing EKS addons (CoreDNS, kube-proxy, VPC CNI, EBS CSI, Pod Identity Agent), (5) Setting up VPC networking for EKS, (6) Configuring cluster autoscaling with Karpenter or Cluster Autoscaler, (7) Deploying DeepParser services (dp-idp, dp-agents, dp-maas-proxy, dp-mcp-proxy) to EKS, (8) Troubleshooting EKS node or cluster issues. Requires: aws CLI v2, eksctl, kubectl."
+description: "Create and manage Amazon EKS clusters, managed node groups, and EC2 instances. Use when: (1) Provisioning a new EKS cluster from scratch, (2) Adding or modifying managed node groups, (3) Choosing EC2 instance types for workloads, (4) Installing EKS addons (CoreDNS, kube-proxy, VPC CNI, EBS CSI, Pod Identity Agent), (5) Setting up VPC networking for EKS, (6) Configuring cluster autoscaling with Karpenter or Cluster Autoscaler, (7) Deploying services to EKS, (8) Troubleshooting EKS node or cluster issues. Requires: aws CLI v2, eksctl, kubectl."
 ---
 
 # EKS Cluster + Node Group + EC2 Setup
 
-Provision EKS clusters with managed node groups for running DeepParser services on AWS.
+Provision EKS clusters with managed node groups for running services on AWS.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ Create a production-ready cluster with a single command:
 
 ```bash
 scripts/create-eks-cluster.sh \
-  --name dp-production \
+  --name my-cluster \
   --region us-east-1 \
   --version 1.31 \
   --node-type m6i.xlarge \
@@ -70,7 +70,7 @@ Options:
 For an eksctl config file approach (more control):
 
 ```bash
-scripts/create-eks-cluster.sh --name dp-production --config-only
+scripts/create-eks-cluster.sh --name my-cluster --config-only
 # Generates eksctl-config.yaml — edit it, then:
 eksctl create cluster -f eksctl-config.yaml
 ```
@@ -80,16 +80,16 @@ eksctl create cluster -f eksctl-config.yaml
 Add specialized node groups for different workload types:
 
 ```bash
-# General workloads (dp-idp, dp-mcp-proxy)
+# General workloads
 scripts/create-node-group.sh \
-  --cluster dp-production \
+  --cluster my-cluster \
   --name general \
   --type m6i.xlarge \
   --nodes 3
 
-# GPU / ML workloads (dp-maas-proxy inference)
+# GPU / ML workloads
 scripts/create-node-group.sh \
-  --cluster dp-production \
+  --cluster my-cluster \
   --name gpu \
   --type g5.xlarge \
   --nodes 1 \
@@ -99,7 +99,7 @@ scripts/create-node-group.sh \
 
 # Spot instances for batch / non-critical workloads
 scripts/create-node-group.sh \
-  --cluster dp-production \
+  --cluster my-cluster \
   --name spot-workers \
   --type m6i.xlarge,m5.xlarge,m5a.xlarge \
   --spot \
@@ -124,38 +124,34 @@ The cluster script installs essential addons automatically. To manage them separ
 
 ```bash
 # Pod Identity Agent (required for aws-s3-eks skill)
-eksctl create addon --cluster dp-production --name eks-pod-identity-agent
+eksctl create addon --cluster my-cluster --name eks-pod-identity-agent
 
 # EBS CSI Driver (for PersistentVolumeClaims)
-eksctl create addon --cluster dp-production --name aws-ebs-csi-driver \
+eksctl create addon --cluster my-cluster --name aws-ebs-csi-driver \
   --service-account-role-arn arn:aws:iam::ACCOUNT:role/ebs-csi-role
 
 # EFS CSI Driver (for ReadWriteMany PVCs)
-eksctl create addon --cluster dp-production --name aws-efs-csi-driver
+eksctl create addon --cluster my-cluster --name aws-efs-csi-driver
 
 # AWS Load Balancer Controller (alternative to NGINX Ingress)
-eksctl create addon --cluster dp-production --name aws-load-balancer-controller
+eksctl create addon --cluster my-cluster --name aws-load-balancer-controller
 ```
 
 See [references/addons.md](references/addons.md) for full addon details and IAM role setup.
 
-### Step 4: Deploy DeepParser Services
+### Step 4: Deploy Your Services
 
-After the cluster is ready, deploy the services:
+After the cluster is ready, deploy your services:
 
 ```bash
-# Create namespaces
-kubectl apply -f dp_agents/k8s/namespace.yaml
-kubectl apply -f dp_maas_proxy/k8s/namespace.yaml
+# Create a namespace
+kubectl create namespace my-app
 
-# Deploy dp-agents
-kubectl apply -f dp_agents/k8s/
+# Deploy via manifests
+kubectl apply -f k8s/
 
-# Deploy dp-maas-proxy
-kubectl apply -f dp_maas_proxy/k8s/
-
-# Deploy dp-idp (Helm)
-helm upgrade --install dp-idp ./dp_idp/k8s/ -n dp-idp --create-namespace
+# Deploy via Helm
+helm upgrade --install my-app ./helm/ -n my-app --create-namespace
 ```
 
 ### Step 5: Verify
@@ -170,16 +166,15 @@ kubectl get ingress -A
 kubectl get svc -A
 ```
 
-## DeepParser Service → Instance Type Mapping
+## Workload → Instance Type Mapping
 
-| Service | Workload Profile | Recommended Instance | Min Nodes |
-|---------|-----------------|---------------------|-----------|
-| dp-idp | Low CPU, low memory | t3.medium or m6i.large | 1 |
-| dp-agents | Medium CPU, medium memory | m6i.xlarge | 2 |
-| dp-maas-proxy | High CPU, medium memory | c6i.xlarge or m6i.xlarge | 2 |
-| dp-mcp-proxy | Low CPU, low memory | t3.medium or m6i.large | 1 |
-| Shared infra (PG, Redis, Temporal) | Memory-optimized | r6i.xlarge | 2 |
-| GPU inference | GPU required | g5.xlarge / g5.2xlarge | 1 |
+| Workload Profile | Recommended Instance | Min Nodes |
+|-----------------|---------------------|-----------|
+| Low CPU, low memory (auth, proxies) | t3.medium or m6i.large | 1 |
+| Medium CPU, medium memory (APIs, agents) | m6i.xlarge | 2 |
+| High CPU, medium memory (request routing) | c6i.xlarge or m6i.xlarge | 2 |
+| Memory-optimized (databases, caches) | r6i.xlarge | 2 |
+| GPU inference | g5.xlarge / g5.2xlarge | 1 |
 
 See [references/ec2-instance-types.md](references/ec2-instance-types.md) for detailed sizing guidance.
 

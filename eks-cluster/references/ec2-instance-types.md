@@ -1,17 +1,16 @@
-# EC2 Instance Types for DeepParser on EKS
+# EC2 Instance Types for EKS
 
-## Quick Reference by Service
+## Quick Reference by Workload
 
-| Service | Workload | Recommended | vCPU | Memory | Est. Monthly |
-|---------|----------|-------------|------|--------|-------------|
-| dp-idp | Auth, low traffic | t3.medium | 2 | 4 GiB | ~$30 |
-| dp-idp | Auth, production | m6i.large | 2 | 8 GiB | ~$70 |
-| dp-agents | Agent execution | m6i.xlarge | 4 | 16 GiB | ~$140 |
-| dp-maas-proxy | LLM routing | c6i.xlarge | 4 | 8 GiB | ~$125 |
-| dp-mcp-proxy | Tool proxy | t3.medium | 2 | 4 GiB | ~$30 |
-| Shared infra | PG + Redis | r6i.xlarge | 4 | 32 GiB | ~$200 |
-| GPU inference | Model serving | g5.xlarge | 4 | 16 GiB + GPU | ~$750 |
-| Batch / workers | Temporal workers | Spot m6i.xlarge | 4 | 16 GiB | ~$50-80 |
+| Workload | Recommended | vCPU | Memory | Est. Monthly |
+| --- | --- | --- | --- | --- |
+| Low traffic services | t3.medium | 2 | 4 GiB | ~$30 |
+| Auth / proxy (production) | m6i.large | 2 | 8 GiB | ~$70 |
+| API services (agents, workers) | m6i.xlarge | 4 | 16 GiB | ~$140 |
+| High-CPU routing / proxy | c6i.xlarge | 4 | 8 GiB | ~$125 |
+| Shared infra (DB, cache) | r6i.xlarge | 4 | 32 GiB | ~$200 |
+| GPU inference | g5.xlarge | 4 | 16 GiB + GPU | ~$750 |
+| Batch / non-critical workers | Spot m6i.xlarge | 4 | 16 GiB | ~$50-80 |
 
 *Prices are approximate on-demand us-east-1 rates.*
 
@@ -19,19 +18,19 @@
 
 ### General Purpose (M-series) — Recommended Default
 
-Balanced compute, memory, and networking. Best for most DeepParser workloads.
+Balanced compute, memory, and networking. Best for most general workloads.
 
 | Instance | vCPU | Memory | Network | Use Case |
 |----------|------|--------|---------|----------|
-| m6i.large | 2 | 8 GiB | Up to 12.5 Gbps | Small: dp-idp, dp-mcp |
-| m6i.xlarge | 4 | 16 GiB | Up to 12.5 Gbps | Standard: dp-agents, dp-maas |
+| m6i.large | 2 | 8 GiB | Up to 12.5 Gbps | Small services, auth, proxies |
+| m6i.xlarge | 4 | 16 GiB | Up to 12.5 Gbps | Standard APIs, agents |
 | m6i.2xlarge | 8 | 32 GiB | Up to 12.5 Gbps | Heavy: multi-service per node |
 | m7i.xlarge | 4 | 16 GiB | Up to 12.5 Gbps | Latest gen, ~5% faster |
 | m6a.xlarge | 4 | 16 GiB | Up to 12.5 Gbps | AMD, ~10% cheaper than m6i |
 
 ### Compute Optimized (C-series)
 
-High CPU-to-memory ratio. Good for dp-maas-proxy (request routing, serialization).
+High CPU-to-memory ratio. Good for request routing, serialization, and compute-heavy services.
 
 | Instance | vCPU | Memory | Network | Use Case |
 |----------|------|--------|---------|----------|
@@ -92,10 +91,10 @@ Total: ~$230/month
 ### Production (6-10 nodes)
 
 ```
-3× m6i.xlarge  — general (dp-idp, dp-agents, dp-mcp)
-2× c6i.xlarge  — compute (dp-maas-proxy)
-2× r6i.xlarge  — data (PostgreSQL, Redis, Temporal)
-2× m6i.xlarge  — spot (Temporal workers, batch)
+3× m6i.xlarge  — general services
+2× c6i.xlarge  — compute-intensive services
+2× r6i.xlarge  — data (PostgreSQL, Redis)
+2× m6i.xlarge  — spot (batch workers)
 Total: ~$1,400/month (on-demand) or ~$1,000/month (with spot)
 ```
 
@@ -116,9 +115,7 @@ Total: ~$2,150/month (on-demand)
 
 ## Right-Sizing Checklist
 
-1. Start with the K8s resource requests from existing deployments:
-   - dp-agents: 250m CPU / 256Mi → fits on m6i.large (2 pods)
-   - dp-maas-proxy: 500m CPU / 512Mi → fits on c6i.xlarge (4 pods)
+1. Start with the K8s resource requests from your deployments (e.g. 250m CPU / 256Mi per pod)
 2. Account for DaemonSet overhead (~300Mi per node for kube-proxy, VPC CNI, Pod Identity Agent)
 3. Leave 15-20% headroom for burst and system pods
 4. Use HPA metrics to determine if CPU or memory is the bottleneck
