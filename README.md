@@ -25,64 +25,64 @@ Apply brand-accurate design systems (colors, typography, components, layout, sha
 
 | Skill | Brand |
 | --- | --- |
-| [design-airbnb](design-md/airbnb/) | Airbnb |
-| [design-airtable](design-md/airtable/) | Airtable |
-| [design-apple](design-md/apple/) | Apple |
-| [design-bmw](design-md/bmw/) | BMW |
-| [design-cal](design-md/cal/) | Cal.com |
-| [design-claude](design-md/claude/) | Claude (Anthropic) |
-| [design-clay](design-md/clay/) | Clay |
-| [design-clickhouse](design-md/clickhouse/) | ClickHouse |
-| [design-cohere](design-md/cohere/) | Cohere |
-| [design-coinbase](design-md/coinbase/) | Coinbase |
-| [design-composio](design-md/composio/) | Composio |
-| [design-cursor](design-md/cursor/) | Cursor |
-| [design-elevenlabs](design-md/elevenlabs/) | ElevenLabs |
-| [design-expo](design-md/expo/) | Expo |
-| [design-ferrari](design-md/ferrari/) | Ferrari |
-| [design-figma](design-md/figma/) | Figma |
-| [design-framer](design-md/framer/) | Framer |
-| [design-hashicorp](design-md/hashicorp/) | HashiCorp |
-| [design-ibm](design-md/ibm/) | IBM |
-| [design-intercom](design-md/intercom/) | Intercom |
-| [design-kraken](design-md/kraken/) | Kraken |
-| [design-lamborghini](design-md/lamborghini/) | Lamborghini |
-| [design-linear.app](design-md/linear.app/) | Linear |
-| [design-lovable](design-md/lovable/) | Lovable |
-| [design-minimax](design-md/minimax/) | MiniMax |
-| [design-mintlify](design-md/mintlify/) | Mintlify |
-| [design-miro](design-md/miro/) | Miro |
-| [design-mistral.ai](design-md/mistral.ai/) | Mistral AI |
-| [design-mongodb](design-md/mongodb/) | MongoDB |
-| [design-notion](design-md/notion/) | Notion |
-| [design-nvidia](design-md/nvidia/) | NVIDIA |
-| [design-ollama](design-md/ollama/) | Ollama |
-| [design-opencode.ai](design-md/opencode.ai/) | OpenCode |
-| [design-pinterest](design-md/pinterest/) | Pinterest |
-| [design-posthog](design-md/posthog/) | PostHog |
-| [design-raycast](design-md/raycast/) | Raycast |
-| [design-renault](design-md/renault/) | Renault |
-| [design-replicate](design-md/replicate/) | Replicate |
-| [design-resend](design-md/resend/) | Resend |
-| [design-revolut](design-md/revolut/) | Revolut |
-| [design-runwayml](design-md/runwayml/) | Runway |
-| [design-sanity](design-md/sanity/) | Sanity |
-| [design-sentry](design-md/sentry/) | Sentry |
-| [design-spacex](design-md/spacex/) | SpaceX |
-| [design-spotify](design-md/spotify/) | Spotify |
-| [design-stripe](design-md/stripe/) | Stripe |
-| [design-supabase](design-md/supabase/) | Supabase |
-| [design-superhuman](design-md/superhuman/) | Superhuman |
-| [design-tesla](design-md/tesla/) | Tesla |
-| [design-together.ai](design-md/together.ai/) | Together AI |
-| [design-uber](design-md/uber/) | Uber |
-| [design-vercel](design-md/vercel/) | Vercel |
-| [design-voltagent](design-md/voltagent/) | VoltAgent |
-| [design-warp](design-md/warp/) | Warp |
-| [design-webflow](design-md/webflow/) | Webflow |
-| [design-wise](design-md/wise/) | Wise |
-| [design-x.ai](design-md/x.ai/) | xAI |
-| [design-zapier](design-md/zapier/) | Zapier |
+| [design-airbnb](design-airbnb/) | Airbnb |
+| [design-airtable](design-airtable/) | Airtable |
+| [design-apple](design-apple/) | Apple |
+| [design-bmw](design-bmw/) | BMW |
+| [design-cal](design-cal/) | Cal.com |
+| [design-claude](design-claude/) | Claude (Anthropic) |
+| [design-clay](design-clay/) | Clay |
+| [design-clickhouse](design-clickhouse/) | ClickHouse |
+| [design-cohere](design-cohere/) | Cohere |
+| [design-coinbase](design-coinbase/) | Coinbase |
+| [design-composio](design-composio/) | Composio |
+| [design-cursor](design-cursor/) | Cursor |
+| [design-elevenlabs](design-elevenlabs/) | ElevenLabs |
+| [design-expo](design-expo/) | Expo |
+| [design-ferrari](design-ferrari/) | Ferrari |
+| [design-figma](design-figma/) | Figma |
+| [design-framer](design-framer/) | Framer |
+| [design-hashicorp](design-hashicorp/) | HashiCorp |
+| [design-ibm](design-ibm/) | IBM |
+| [design-intercom](design-intercom/) | Intercom |
+| [design-kraken](design-kraken/) | Kraken |
+| [design-lamborghini](design-lamborghini/) | Lamborghini |
+| [design-linear.app](design-linear.app/) | Linear |
+| [design-lovable](design-lovable/) | Lovable |
+| [design-minimax](design-minimax/) | MiniMax |
+| [design-mintlify](design-mintlify/) | Mintlify |
+| [design-miro](design-miro/) | Miro |
+| [design-mistral.ai](design-mistral.ai/) | Mistral AI |
+| [design-mongodb](design-mongodb/) | MongoDB |
+| [design-notion](design-notion/) | Notion |
+| [design-nvidia](design-nvidia/) | NVIDIA |
+| [design-ollama](design-ollama/) | Ollama |
+| [design-opencode.ai](design-opencode.ai/) | OpenCode |
+| [design-pinterest](design-pinterest/) | Pinterest |
+| [design-posthog](design-posthog/) | PostHog |
+| [design-raycast](design-raycast/) | Raycast |
+| [design-renault](design-renault/) | Renault |
+| [design-replicate](design-replicate/) | Replicate |
+| [design-resend](design-resend/) | Resend |
+| [design-revolut](design-revolut/) | Revolut |
+| [design-runwayml](design-runwayml/) | Runway |
+| [design-sanity](design-sanity/) | Sanity |
+| [design-sentry](design-sentry/) | Sentry |
+| [design-spacex](design-spacex/) | SpaceX |
+| [design-spotify](design-spotify/) | Spotify |
+| [design-stripe](design-stripe/) | Stripe |
+| [design-supabase](design-supabase/) | Supabase |
+| [design-superhuman](design-superhuman/) | Superhuman |
+| [design-tesla](design-tesla/) | Tesla |
+| [design-together.ai](design-together.ai/) | Together AI |
+| [design-uber](design-uber/) | Uber |
+| [design-vercel](design-vercel/) | Vercel |
+| [design-voltagent](design-voltagent/) | VoltAgent |
+| [design-warp](design-warp/) | Warp |
+| [design-webflow](design-webflow/) | Webflow |
+| [design-wise](design-wise/) | Wise |
+| [design-x.ai](design-x.ai/) | xAI |
+| [design-zapier](design-zapier/) | Zapier |
 
 ## Installation
 
@@ -105,6 +105,10 @@ npx skills add deepparser/skills --skill design-supabase
 npx skills add deepparser/skills --skill design-claude
 # ... and 54 more — see the full list above
 ```
+
+## Acknowledgements
+
+The brand design system skills are based on [VoltAgent/awesome-design-md](https://github.com/VoltAgent/awesome-design-md) — a curated collection of brand design system markdown files for AI-assisted UI development.
 
 ## License
 
