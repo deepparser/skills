@@ -1,0 +1,295 @@
+{
+  "version": 1,
+  "skills": {
+    "design-airbnb": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "ba93536a080b43d562e623cd5168d00837fa84f4afc32c7af9207726fe678349"
+    },
+    "design-airtable": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "226b7c27986e23832c18b2a6fe1c59e9ad60e3eebdb29895f6976540c9fbd4c4"
+    },
+    "design-apple": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "b30d8ae9d6d193c9e93ba7b89302573a6c4a9fb14ecff8dc09b134aa1c72e8ab"
+    },
+    "design-bmw": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "fb3bc2d978593607e1b572603935879b2c232867c026e1d6ee7cc2c0d9d78939"
+    },
+    "design-cal": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "c177515dba060534d2ff8ee103a113e5dbda3424a4246d36fef6b023bca02ad8"
+    },
+    "design-claude": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "c579c14b0623b3249a2054c3a21fd81d14ede4864f867e2c514167f22aa5cb01"
+    },
+    "design-clay": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "f247f74701b01b5bf0004583c7bc6590882211e1dfe8a01d5559a31448b6265d"
+    },
+    "design-clickhouse": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "da84137577888925561e3b143166bd24cefa5c87bcf22d101083b7a743b5b013"
+    },
+    "design-cohere": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "19777e712264f70308ab85bf84094b025a68dc1e3619794440d6dd3a12ed4faa"
+    },
+    "design-coinbase": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "d87c726f42d97bb5609cac87091d386f40f45c3400ceeca665616fc682036613"
+    },
+    "design-composio": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "e3264c0dc8a5557da5ed56ca337213e6eabbf6a4efb0d14328ecff8d95e2a29e"
+    },
+    "design-cursor": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "55e8b7e785a52eaf99967678c074edfbf5a719889aaf4979f6d8eb6b653446b1"
+    },
+    "design-elevenlabs": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "4773b4a87ad0c731f5f3d814fbe16985bb9f9815ac00a249f073a93ca341952b"
+    },
+    "design-expo": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "c5a3f753a7f40de8f683bf6279ca1b0d561082508e7caaf7901f03709502d57a"
+    },
+    "design-ferrari": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "9c57047488280119139e173046d2321b32ecef8ccc1827c14b52eddf89cfbbfc"
+    },
+    "design-figma": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "3a04d4e149f45e21781d4c3be53ec14438810b6a665839eefc3f91b09cf1a55e"
+    },
+    "design-framer": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "a98555e18f05f340708c56ce054521774e95a53a28435b73b24430afbf166f2b"
+    },
+    "design-hashicorp": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "4d8ec8e434bb0ea14dcf76475afaf4c274bbf0be65091d12e0933db55518fb48"
+    },
+    "design-ibm": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "253ce6b6f4e621df161190826a147f4e6982d39202ff1c7a7eb24140f76a5e58"
+    },
+    "design-intercom": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "5f07373644160cdb9b35c094d31866b4ac93aa993b8a2e00d03297750b4bb6f0"
+    },
+    "design-kraken": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "4d3b3d4c8c898111a4d1718ffbe78353e4960e77c94698144a0e1474b28b2183"
+    },
+    "design-lamborghini": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "c655673c5e735a0e4fcd5a9cae2d62f206253722ad3485b12ebc27b3ac02ceee"
+    },
+    "design-linear.app": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "5a4f18d37f6d209adcbd164ff3a1a924d2dfd4972f1c652002091f4cd29c4560"
+    },
+    "design-lovable": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "5a49d90e332d52ac50dad854f286f5ef4feb71e993bfc84496e258b45ef17a07"
+    },
+    "design-minimax": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "75b234b361443ff916cdd37498e03bd3d34f7e27459c188586b09f330ef5db6a"
+    },
+    "design-mintlify": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "5a451a32bb0488b701d639129c2a96bef177f6ab3724bedafbed3066eb3380bd"
+    },
+    "design-miro": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "3ba294f474a3b12118d2ebcd9af2aa17daae9e88355755add15f87b7b98b2a2e"
+    },
+    "design-mistral.ai": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "eada9d036e20a13848b0a7f4a3bc0be281c4c7bfbbce5a16c904e56ee7a26af7"
+    },
+    "design-mongodb": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "c028ccdd92e2394eb9aa259d4bed574069f6b6d427d357a6a3c4c23a9dba8d2a"
+    },
+    "design-notion": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "5bd1a7a990696cf5b52ee75e63de059e13e9fae7438b55ecbb60663e158e33e8"
+    },
+    "design-nvidia": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "e03de182257f2a4e8112dd680aff5c7400121e14c7363bd0572043cf9ab83104"
+    },
+    "design-ollama": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "b8247f319e43bdb3e3d2cd5ed84f75536eeb6a8b6bdb435fcb4db016a2cdaed3"
+    },
+    "design-opencode.ai": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "2ae73877d8551165ec399209f8ed0465ce08004ced2eccf45e7f72fb39de34f0"
+    },
+    "design-pinterest": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "d3253fbaa579a0575144b5933e6cd3693cb5eececcc816dba0a35cd813579caf"
+    },
+    "design-posthog": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "82cba72dd1a775cb10d10c33e15fca9b351331ae1d8519385f12732577de7359"
+    },
+    "design-raycast": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "e1ea1be420d756ee273bde0bd4169304a06ca2e9e682a3cc79cfee931c40d07a"
+    },
+    "design-renault": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "925da417a395906053bc9dc8d28057c5332e86928038b6947363c6d6d59e73b5"
+    },
+    "design-replicate": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "157856e62da649651185fae81572cdef7df70303537a68baffe6d4b2680f16c6"
+    },
+    "design-resend": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "b77434aa7c8e772ae82bafa4812558e438a39e77ae496f313c22054b9199f86b"
+    },
+    "design-revolut": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "cc5e9852861fcc26733e82bade061ee743239124c87e396c22acea93b143162e"
+    },
+    "design-runwayml": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "780a0c9b1d991d58743ac87a4066979abb216c3dbc96436e34805a8e15ad4f71"
+    },
+    "design-sanity": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "7d0ecc9e8dacff648c4eeb0fa0f768fa273917e1e1da8e2c29c9d676ed05c850"
+    },
+    "design-sentry": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "a361a1af05e8f75bc9cb2c8548897cee5ae3802f6a87c7427822291e7022c441"
+    },
+    "design-spacex": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "19708ae047157922657610ac196381286367b213133377cfcf459ec9084c29ec"
+    },
+    "design-spotify": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "ae4c9ad52456931e8821a5d7b3b4ae0163a1244c4a90a09f67a89412faab55e3"
+    },
+    "design-stripe": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "98a938060797e7c8a1d1850085d0b6240960f48a96d642f881dce87fdf768dc3"
+    },
+    "design-supabase": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "9db0167299d86652c4ee22bee1e70b102879ae0970e727353d0c9b439c8a2f96"
+    },
+    "design-superhuman": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "383a75d60d5ada6a2f77c3668ba78bf20babdd82eba0c0779e63b782231860f0"
+    },
+    "design-tesla": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "d2ea1a53f624e8094836dddd75163cfbf94993c3f3ec59ad252d82e9aea1639d"
+    },
+    "design-together.ai": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "4f65df7febd862c66fc2576b43d3bc38b94cc39289da13881317b4826ff4de77"
+    },
+    "design-uber": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "96fe74ea99d02160c823962d1acae61b2f2cafd4e3095f560b5cff98a4c00958"
+    },
+    "design-vercel": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "464121fd463d60b086523d4b41130cbad8367bc3a0a679786b938142a20fde99"
+    },
+    "design-voltagent": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "468b4b299b0937f7e94a380fef022f3d45f7c0e17d504e5a96e151839231a954"
+    },
+    "design-warp": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "28262f38b9baebbb28dc93b7ca2e121793ba1098368302a4977dcdfbc3e58e16"
+    },
+    "design-webflow": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "f089d8a505e9a0cda92443af61472e7e7596ab179da549cc0df121009272adec"
+    },
+    "design-wise": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "57779505921733316485dc38f4675ecf2c2b85701f72aecd735fc86c3c441f60"
+    },
+    "design-x.ai": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "e34a1a63f5075cece387a11916f4ac2db2f045e9dc6d6b11f63a94ea14cf81a2"
+    },
+    "design-zapier": {
+      "source": "deepparser/skills",
+      "sourceType": "github",
+      "computedHash": "39e00eaef6c15057980436f7b4cb52dff948186f72ae977d695bea65a9abe981"
+    }
+  }
+}
